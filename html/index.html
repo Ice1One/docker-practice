@@ -1,10 +1,587 @@
 <!DOCTYPE html>
-<html>
-  <head>
-    <title>My Docker Project</title>
-  </head>
-  <body>
-    <h1> EC2 через Docker</h1>
-    <p>nginx + compose + volume</p>
-  </body>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Marko Zvarych — Junior DevOps</title>
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;600;800&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg: #080c12;
+      --bg2: #0d1520;
+      --bg3: #111c2e;
+      --blue: #3b82f6;
+      --blue-dim: #1d4ed8;
+      --blue-glow: rgba(59,130,246,0.15);
+      --cyan: #22d3ee;
+      --text: #e2e8f0;
+      --muted: #64748b;
+      --border: rgba(59,130,246,0.15);
+      --mono: 'JetBrains Mono', monospace;
+      --sans: 'Syne', sans-serif;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--mono);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(59,130,246,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(59,130,246,0.03) 1px, transparent 1px);
+      background-size: 40px 40px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .orb {
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(120px);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .orb-1 {
+      width: 500px; height: 500px;
+      background: rgba(59,130,246,0.08);
+      top: -100px; left: -100px;
+    }
+    .orb-2 {
+      width: 400px; height: 400px;
+      background: rgba(34,211,238,0.05);
+      bottom: 100px; right: -100px;
+    }
+
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 20px 60px;
+      background: rgba(8,12,18,0.8);
+      backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: 18px;
+      color: var(--blue);
+      letter-spacing: -0.5px;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 32px;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 13px;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--blue); }
+
+    .status-bar {
+      position: fixed;
+      bottom: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 24px;
+      padding: 8px 60px;
+      background: rgba(8,12,18,0.9);
+      border-top: 1px solid var(--border);
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .status-item { display: flex; align-items: center; gap: 6px; }
+
+    .status-dot {
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: #22c55e;
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+
+    main {
+      position: relative;
+      z-index: 1;
+      padding-top: 80px;
+      padding-bottom: 60px;
+    }
+
+    section {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 80px 40px;
+    }
+
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding-top: 120px;
+    }
+
+    .hero-label {
+      font-size: 12px;
+      color: var(--blue);
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .hero-label::before {
+      content: '';
+      display: block;
+      width: 30px; height: 1px;
+      background: var(--blue);
+    }
+
+    .hero-name {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: clamp(52px, 8vw, 96px);
+      line-height: 0.95;
+      letter-spacing: -3px;
+      margin-bottom: 16px;
+    }
+
+    .hero-name span { color: var(--blue); }
+
+    .hero-title {
+      font-size: 14px;
+      color: var(--muted);
+      margin-bottom: 48px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .hero-title::after {
+      content: '';
+      flex: 1;
+      max-width: 200px;
+      height: 1px;
+      background: var(--border);
+    }
+
+    .hero-desc {
+      font-size: 14px;
+      color: var(--muted);
+      line-height: 1.8;
+      max-width: 520px;
+      margin-bottom: 48px;
+    }
+
+    .hero-desc strong { color: var(--text); }
+
+    .hero-cta { display: flex; gap: 16px; flex-wrap: wrap; }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 24px;
+      border-radius: 6px;
+      font-family: var(--mono);
+      font-size: 13px;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary { background: var(--blue); color: #fff; }
+
+    .btn-primary:hover {
+      background: var(--blue-dim);
+      transform: translateY(-1px);
+      box-shadow: 0 8px 24px rgba(59,130,246,0.3);
+    }
+
+    .btn-ghost {
+      background: transparent;
+      color: var(--muted);
+      border: 1px solid var(--border);
+    }
+
+    .btn-ghost:hover {
+      color: var(--blue);
+      border-color: var(--blue);
+      background: var(--blue-glow);
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 48px;
+    }
+
+    .section-num { font-size: 11px; color: var(--blue); letter-spacing: 2px; }
+
+    .section-title {
+      font-family: var(--sans);
+      font-weight: 800;
+      font-size: 32px;
+      letter-spacing: -1px;
+    }
+
+    .section-line { flex: 1; height: 1px; background: var(--border); }
+
+    .stack-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+      gap: 12px;
+    }
+
+    .stack-item {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 16px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      transition: all 0.2s;
+    }
+
+    .stack-item:hover {
+      border-color: var(--blue);
+      background: var(--blue-glow);
+      transform: translateY(-2px);
+    }
+
+    .stack-icon { font-size: 20px; width: 32px; text-align: center; }
+    .stack-name { font-size: 13px; color: var(--text); }
+    .stack-level { font-size: 10px; color: var(--muted); margin-top: 2px; }
+
+    .about-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 40px;
+      align-items: start;
+    }
+
+    .about-text { font-size: 14px; color: var(--muted); line-height: 1.9; }
+    .about-text p + p { margin-top: 16px; }
+    .about-text strong { color: var(--text); }
+
+    .about-stats { display: flex; flex-direction: column; gap: 16px; }
+
+    .stat-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .stat-label { font-size: 12px; color: var(--muted); }
+    .stat-value { font-size: 20px; font-weight: 700; color: var(--blue); font-family: var(--sans); }
+
+    .projects-grid { display: grid; gap: 20px; }
+
+    .project-card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 32px;
+      transition: all 0.3s;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .project-card::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(90deg, var(--blue), var(--cyan));
+      opacity: 0;
+      transition: opacity 0.3s;
+    }
+
+    .project-card:hover {
+      border-color: rgba(59,130,246,0.4);
+      transform: translateY(-3px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+
+    .project-card:hover::before { opacity: 1; }
+
+    .project-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 16px;
+    }
+
+    .project-name {
+      font-family: var(--sans);
+      font-weight: 700;
+      font-size: 20px;
+      letter-spacing: -0.5px;
+    }
+
+    .project-link {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 12px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: color 0.2s;
+    }
+
+    .project-link:hover { color: var(--blue); }
+
+    .project-desc {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 24px;
+    }
+
+    .project-tags { display: flex; flex-wrap: wrap; gap: 8px; }
+
+    .tag {
+      background: rgba(59,130,246,0.1);
+      border: 1px solid rgba(59,130,246,0.2);
+      color: var(--blue);
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 4px;
+      letter-spacing: 0.5px;
+    }
+
+    .fade-in {
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeIn 0.6s forwards;
+    }
+
+    @keyframes fadeIn {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .fade-in:nth-child(1) { animation-delay: 0.1s; }
+    .fade-in:nth-child(2) { animation-delay: 0.2s; }
+    .fade-in:nth-child(3) { animation-delay: 0.3s; }
+    .fade-in:nth-child(4) { animation-delay: 0.4s; }
+    .fade-in:nth-child(5) { animation-delay: 0.5s; }
+
+    .cursor {
+      display: inline-block;
+      width: 3px; height: 1em;
+      background: var(--blue);
+      margin-left: 4px;
+      vertical-align: middle;
+      animation: blink 1s infinite;
+    }
+
+    @keyframes blink {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0; }
+    }
+
+    @media (max-width: 768px) {
+      nav { padding: 16px 24px; }
+      section { padding: 60px 24px; }
+      .about-grid { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .status-bar { padding: 8px 24px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="orb orb-1"></div>
+  <div class="orb orb-2"></div>
+
+  <nav>
+    <div class="nav-logo">mz://devops</div>
+    <ul class="nav-links">
+      <li><a href="#about">about</a></li>
+      <li><a href="#stack">stack</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="https://github.com/Ice1One" target="_blank">github</a></li>
+    </ul>
+  </nav>
+
+  <div class="status-bar">
+    <div class="status-item">
+      <div class="status-dot"></div>
+      <span>EC2 · live</span>
+    </div>
+    <div class="status-item">⬡ Docker · running</div>
+    <div class="status-item">⚡ nginx · active</div>
+    <div class="status-item" style="margin-left:auto;">AWS · eu-central-1</div>
+  </div>
+
+  <main>
+
+    <section class="hero">
+      <div class="hero-label fade-in">Junior DevOps Engineer</div>
+      <h1 class="hero-name fade-in">
+        Marko<br><span>Zvarych</span><span class="cursor"></span>
+      </h1>
+      <div class="hero-title fade-in">AWS · Docker · Linux · CI/CD</div>
+      <p class="hero-desc fade-in">
+        Building and deploying <strong>containerized infrastructure</strong> on AWS.<br>
+        Passionate about automation, cloud architecture, and writing clean infrastructure code.
+        Currently studying Computer Science while shipping real DevOps projects.
+      </p>
+      <div class="hero-cta fade-in">
+        <a href="https://github.com/Ice1One" target="_blank" class="btn btn-primary">
+          ⬡ github.com/Ice1One
+        </a>
+        <a href="mailto:zvarychmarko@gmail.com" class="btn btn-ghost">
+          ✉ zvarychmarko@gmail.com
+        </a>
+      </div>
+    </section>
+
+    <section id="about">
+      <div class="section-header">
+        <span class="section-num">01</span>
+        <h2 class="section-title">About</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="about-grid">
+        <div class="about-text">
+          <p>I'm a <strong>20-year-old DevOps engineer</strong> from Ternopil, Ukraine. Currently in my 3rd year of Computer Science at <strong>Ivan Puluj TNTU</strong>.</p>
+          <p>I started with Linux and AWS, then moved into Docker and containerization. I enjoy making infrastructure <strong>reliable, automated, and repeatable</strong>.</p>
+          <p>No tutorials followed step-by-step — I learn by <strong>building, breaking, and fixing</strong> real things on a live server.</p>
+        </div>
+        <div class="about-stats">
+          <div class="stat-card">
+            <div>
+              <div class="stat-label">Currently learning</div>
+              <div style="color:var(--text);font-size:13px;margin-top:4px;">CI/CD · Kubernetes · Terraform</div>
+            </div>
+            <div class="stat-value">→</div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <div class="stat-label">Location</div>
+              <div style="color:var(--text);font-size:13px;margin-top:4px;">Ternopil, Ukraine</div>
+            </div>
+            <div class="stat-value">🇺🇦</div>
+          </div>
+          <div class="stat-card">
+            <div>
+              <div class="stat-label">English</div>
+              <div style="color:var(--text);font-size:13px;margin-top:4px;">B1 spoken · B2 reading</div>
+            </div>
+            <div class="stat-value">B2</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section id="stack">
+      <div class="section-header">
+        <span class="section-num">02</span>
+        <h2 class="section-title">Stack</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="stack-grid">
+        <div class="stack-item">
+          <div class="stack-icon">☁️</div>
+          <div><div class="stack-name">AWS EC2</div><div class="stack-level">hands-on</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">🐳</div>
+          <div><div class="stack-name">Docker</div><div class="stack-level">Dockerfile · Compose</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">🌐</div>
+          <div><div class="stack-name">nginx</div><div class="stack-level">config · proxy</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">🐧</div>
+          <div><div class="stack-name">Linux</div><div class="stack-level">Amazon Linux · Ubuntu</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">⚙️</div>
+          <div><div class="stack-name">GitHub Actions</div><div class="stack-level">CI/CD pipelines</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">📜</div>
+          <div><div class="stack-name">Bash</div><div class="stack-level">scripting · automation</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">🔒</div>
+          <div><div class="stack-name">AWS S3 · VPC</div><div class="stack-level">Security Groups · IAM</div></div>
+        </div>
+        <div class="stack-item">
+          <div class="stack-icon">🐍</div>
+          <div><div class="stack-name">Python</div><div class="stack-level">basic scripting</div></div>
+        </div>
+      </div>
+    </section>
+
+    <section id="projects">
+      <div class="section-header">
+        <span class="section-num">03</span>
+        <h2 class="section-title">Projects</h2>
+        <div class="section-line"></div>
+      </div>
+      <div class="projects-grid">
+        <div class="project-card">
+          <div class="project-top">
+            <div class="project-name">Docker + nginx · AWS EC2</div>
+            <a href="https://github.com/Ice1One/docker-practice" target="_blank" class="project-link">github ↗</a>
+          </div>
+          <p class="project-desc">
+            Production-style deployment of a containerized web server on a live AWS EC2 instance.
+            Built Dockerfile, docker-compose.yml, custom nginx config, Docker Volumes for persistence,
+            and a full CI/CD pipeline via GitHub Actions that auto-deploys on every git push.
+          </p>
+          <div class="project-tags">
+            <span class="tag">Docker</span>
+            <span class="tag">nginx</span>
+            <span class="tag">AWS EC2</span>
+            <span class="tag">GitHub Actions</span>
+            <span class="tag">CI/CD</span>
+            <span class="tag">Volumes</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+</body>
 </html>
