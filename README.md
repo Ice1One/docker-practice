@@ -7,7 +7,7 @@
 ![AWS](https://img.shields.io/badge/AWS_EC2-FF9900?style=flat&logo=amazonaws&logoColor=white)
 ![Linux](https://img.shields.io/badge/Amazon_Linux-232F3E?style=flat&logo=linux&logoColor=white)
 ![Status](https://img.shields.io/badge/status-live-brightgreen?style=flat)
-
+**🌐 Live: [https://mzvarych.mooo.com](https://mzvarych.mooo.com)**
 ---
 
 ## 📌 Overview
@@ -80,4 +80,4 @@ AWS EC2 Instance (Amazon Linux 2023)
 
 ---
 
-**Marko Zvarych** · [github.com/Ice1One](https://github.com/Ice1One)
+**Marko Zvarych** · [github.com/Ice1One](https://github.com/Ice1One) · [mzvarych.mooo.com](https://mzvarych.mooo.com)
