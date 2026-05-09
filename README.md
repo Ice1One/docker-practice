@@ -77,7 +77,30 @@ AWS EC2 Instance (Amazon Linux 2023)
 | nginx | Static content, custom configuration |
 | AWS EC2 | Instance setup, Security Groups, SSH access |
 | Debugging | `docker logs`, `docker exec`, `docker inspect` |
+---
 
+## ⚙️ CI/CD Pipeline
+git push → GitHub Actions → SSH → EC2
+↓
+git pull
+↓
+docker-compose down
+↓
+docker-compose up -d
+↓
+✅ Live
+---
+
+## 📡 Monitoring
+
+Automated server monitoring script runs every 5 minutes via cron:
+- Docker container status and resource usage
+- RAM and disk space
+- Site availability check (HTTP 200)
+
+```bash
+~/monitor.sh
+```
 ---
 
 **Marko Zvarych** · [github.com/Ice1One](https://github.com/Ice1One) · [mzvarych.mooo.com](https://mzvarych.mooo.com)
